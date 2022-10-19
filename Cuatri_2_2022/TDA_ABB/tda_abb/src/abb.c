@@ -228,18 +228,53 @@ size_t abb_con_cada_elemento(abb_t *arbol, abb_recorrido recorrido,
 	return 0;
 }
 
-size_t nodo_recorrer_inorden(nodo_abb_t *nodo_actual,void **array,size_t tamanio_array, size_t posc)
+size_t nodo_recorrer_inorden(nodo_abb_t *nodo_actual,void **array,size_t tamanio_array, size_t tamanio_ocupado)
 {
-	if (nodo_actual == NULL || posc == tamanio_array)
-		return 0;
-	posc += nodo_recorrer_inorden(nodo_actual->izquierda,array, tamanio_array,posc);
-	array[posc++] = nodo_actual->elemento;
-	posc += nodo_recorrer_inorden(nodo_actual->derecha,array, tamanio_array,posc);
-	return posc;
+	if (nodo_actual == NULL || tamanio_ocupado == tamanio_array)
+		return tamanio_ocupado;
+	tamanio_ocupado = nodo_recorrer_inorden(nodo_actual->izquierda,array, tamanio_array,tamanio_ocupado);
+	if (tamanio_ocupado == tamanio_array)
+		return tamanio_ocupado;
+	array[tamanio_ocupado++] = nodo_actual->elemento;
+	return nodo_recorrer_inorden(nodo_actual->derecha,array, tamanio_array,tamanio_ocupado);
 }
+
+size_t nodo_recorrer_preorden(nodo_abb_t *nodo_actual,void **array,size_t tamanio_array, size_t tamanio_ocupado)
+{
+	if (nodo_actual == NULL || tamanio_ocupado == tamanio_array)
+		return tamanio_ocupado;
+	array[tamanio_ocupado++] = nodo_actual->elemento;
+	tamanio_ocupado = nodo_recorrer_preorden(nodo_actual->izquierda,array, tamanio_array,tamanio_ocupado);
+	if (tamanio_ocupado == tamanio_array)
+		return tamanio_ocupado;
+	return nodo_recorrer_preorden(nodo_actual->derecha,array, tamanio_array,tamanio_ocupado);
+}
+
+size_t nodo_recorrer_postorden(nodo_abb_t *nodo_actual,void **array,size_t tamanio_array, size_t tamanio_ocupado)
+{
+	if (nodo_actual == NULL || tamanio_ocupado == tamanio_array)
+		return tamanio_ocupado;
+	tamanio_ocupado = nodo_recorrer_postorden(nodo_actual->izquierda,array, tamanio_array,tamanio_ocupado);
+	if (tamanio_ocupado == tamanio_array)
+		return tamanio_ocupado;
+	tamanio_ocupado = nodo_recorrer_postorden(nodo_actual->derecha,array, tamanio_array,tamanio_ocupado);
+	if (tamanio_ocupado == tamanio_array)
+		return tamanio_ocupado;
+	array[tamanio_ocupado++] = nodo_actual->elemento;
+	return tamanio_array;
+}
+
 
 size_t abb_recorrer(abb_t *arbol, abb_recorrido recorrido, void **array,
 		    size_t tamanio_array)
 {
-	
+	if (tamanio_array == 0 || array == NULL || abb_vacio(arbol) == true)
+		return 0;
+	if (recorrido == INORDEN)
+		return nodo_recorrer_inorden(arbol->nodo_raiz,array,tamanio_array,0);
+	if (recorrido == PREORDEN)
+		return nodo_recorrer_preorden(arbol->nodo_raiz,array,tamanio_array,0);
+	if (recorrido == POSTORDEN)	
+		return nodo_recorrer_postorden(arbol->nodo_raiz,array,tamanio_array,0);
+	return 0;
 }
