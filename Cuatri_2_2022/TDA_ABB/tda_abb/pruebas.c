@@ -20,7 +20,7 @@ void abb_se_creo_vacio()
 
 void abb_crear_con_comparador_NULL_devuelve_NULL()
 {
-	pa2m_afirmar(abb_crear(NULL), "")
+	pa2m_afirmar(abb_crear(NULL) == NULL, "El arbol es NULL cuando el comparador es NULL");
 }
 
 void insertar_elementos_no_retorna_NULL()
@@ -59,8 +59,7 @@ abb_t *crear_abb_prueba(char *cadena)
 {
 	abb_t *abb = abb_crear(comparar_char);
 	char *iterador = cadena;
-	while (*iterador != '\0')
-	{
+	while (*iterador != '\0') {
 		abb_insertar(abb,iterador);
 		iterador++;
 	}
@@ -90,6 +89,18 @@ void quitar_todos_los_elemento_deja_abb_vacio()
 	abb_destruir(abb);	
 }
 
+void quitar_en_arbol_NULL_devuelve_NULL()
+{
+	pa2m_afirmar(abb_quitar(NULL,NULL) == NULL, "Quitar en arbol NULL devuelve NULL");
+}
+
+void quitar_en_arbol_vacio_devuelve_NULL()
+{
+	abb_t *abb = abb_crear(comparar_char);
+	char a = 'a';
+	pa2m_afirmar(abb_quitar(abb,&a) == NULL, "Quitar en arbol vacio devuelve NULL");
+	abb_destruir(abb);
+}
 
 void insertar_y_quitar_elementos_repetidos_es_correcto()
 {
@@ -126,13 +137,52 @@ void buscar_elementos_devuelve_el_valor_correcto()
 {
 	char *cadena = "josephjames";
 	abb_t *abb = crear_abb_prueba(cadena);
-	
+
 	pa2m_afirmar(abb != NULL, "Se inserto los elementos \'j\'-\'o\'-\'s\'-\'e\'-\'p\'-\'h\'-\'j\'-\'a\'-\'m\'-\'e\'-\'s\'");
 	pa2m_afirmar(abb_buscar(abb,cadena+0) == cadena+0, "Buscar la \'j\' devuelve el elemento correcto");
 	pa2m_afirmar(abb_buscar(abb,cadena+8) == cadena+8, "Buscar la \'m\' devuelve el elemento correcto");
 	char z = 'z';
 	pa2m_afirmar(abb_buscar(abb,&z) == NULL, "Buscar la \'z\' devuelve NULL");
 
+	abb_destruir(abb);
+}
+
+bool es_par(void *valor,void *extra)
+{
+	return ((*(int *)valor % 2) == 0);
+}
+
+int comparar_enteros(void *A, void *B)
+{
+	if ((*(int *)A) == (*(int *)B))
+		return 0;
+	if ((*(int *)A) > (*(int *)B))
+		return 1;
+	return -1;
+}
+
+void aplicar_con_cada_elemento_devuelve_la_cantidad_correcta()
+{
+	abb_t *abb = abb_crear(comparar_enteros);
+	pa2m_afirmar(abb_con_cada_elemento(abb,INORDEN,es_par,NULL) == 0, "Aplicar funcion con cada elemento devuelve cero cuando el arbol esta vacio y recorro INORDEN");
+	pa2m_afirmar(abb_con_cada_elemento(abb,PREORDEN,es_par,NULL) == 0, "Aplicar funcion con cada elemento devuelve cero cuando el arbol esta vacio y recorro PREORDEN");
+	pa2m_afirmar(abb_con_cada_elemento(abb,POSTORDEN,es_par,NULL) == 0, "Aplicar funcion con cada elemento devuelve cero cuando el arbol esta vacio y recorro POSTORDEN");
+	int a = 100, b = 36, c = 21, d = 43, e = 120, f = 110, g = 121;
+	void *_a = &a, *_b = &b, *_c = &c, *_d = &d, *_e = &e, *_f = &f, *_g = &g;
+	abb_insertar(abb,_a);
+	abb_insertar(abb,_b);
+	abb_insertar(abb,_c);
+	abb_insertar(abb,_d);
+	abb_insertar(abb,_e);
+	abb_insertar(abb,_f);
+	abb_insertar(abb,_g);
+	
+	pa2m_afirmar(abb_con_cada_elemento(abb,INORDEN,es_par,NULL) == 0, "Con el recorrido INORDEN, el primer elemento es inpar, entonces devuelve cero");
+	pa2m_afirmar(abb_con_cada_elemento(abb,PREORDEN,es_par,NULL) == 2, "Con el recorrido PREORDEN, los 2 primero elementos son PAR");
+	pa2m_afirmar(abb_con_cada_elemento(abb,POSTORDEN,es_par,NULL) == 0, "Con el recorrido POSTORDEN, el primer elemento es impar");
+
+	pa2m_afirmar(abb_con_cada_elemento(abb,EOF,es_par,NULL) == 0, "aplicar una funcion con cada elemento y un recorrido invalido devuelve 0");
+	pa2m_afirmar(abb_con_cada_elemento(abb,INORDEN,NULL,NULL) == 0, "Aplicar la funcion NULL a cada elemento devuelve 0");
 	abb_destruir(abb);
 }
 
@@ -153,12 +203,23 @@ int main()
 	pa2m_nuevo_grupo("quita elementos de un arbol hasta que quede vacio");
 	quitar_todos_los_elemento_deja_abb_vacio();
 
+	pa2m_nuevo_grupo("Prueba quitar elemento en arbol NULL");
+	quitar_en_arbol_NULL_devuelve_NULL();
+
+	pa2m_nuevo_grupo("Prueba quitar en arbol vacio devuelve NULL");
+	quitar_en_arbol_vacio_devuelve_NULL();
+
 	pa2m_nuevo_grupo("Insertar y quitar elementos repetidos");
 	insertar_y_quitar_elementos_repetidos_es_correcto();
 
 	pa2m_nuevo_grupo("Prueba buscar elementos en el arbol");
 	buscar_elementos_devuelve_el_valor_correcto();
 	
-	
+	pa2m_nuevo_grupo("Prueba con comparador NULL");
+	abb_crear_con_comparador_NULL_devuelve_NULL();
+
+	pa2m_nuevo_grupo("Prueba aplicar funcion \"es_par\" con cada elemento");
+	aplicar_con_cada_elemento_devuelve_la_cantidad_correcta();
+
 	return pa2m_mostrar_reporte();
 }

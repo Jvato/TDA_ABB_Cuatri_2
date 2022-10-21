@@ -1,9 +1,13 @@
 #include "abb.h"
 #include <stddef.h>
 #include <stdlib.h>
+#include "pila.h"
+
 
 abb_t *abb_crear(abb_comparador comparador)
 {
+	if (comparador == NULL)
+		return NULL;
 	abb_t *abb = calloc(1,sizeof(abb_t));
 	if (abb == NULL)
 		return NULL;
@@ -87,8 +91,7 @@ void *nodo_quitar_actual(nodo_abb_t **ptr_nodo_actual)
 	nodo_abb_t **ptr_nodo_a_borrar;
 	bool tiene_2_hijos = ((*ptr_nodo_actual)->derecha != NULL && (*ptr_nodo_actual)->izquierda != NULL);
 
-	if ( tiene_2_hijos )
-	{
+	if ( tiene_2_hijos ) {
 		ptr_nodo_a_borrar = &((*ptr_nodo_actual)->izquierda);
 		while ((*ptr_nodo_a_borrar)->derecha != NULL)
 			ptr_nodo_a_borrar = &((*ptr_nodo_a_borrar)->derecha);
@@ -118,8 +121,7 @@ void *abb_quitar(abb_t *arbol, void *elemento)
 		return NULL;
 
 	nodo_abb_t **ptr_nodo = nodo_buscar(&(arbol->nodo_raiz),arbol->comparador,elemento);
-	if (*ptr_nodo != NULL)
-	{
+	if (*ptr_nodo != NULL) {
 		arbol->tamanio--;
 		return nodo_quitar_actual(ptr_nodo);
 	}
@@ -176,15 +178,9 @@ size_t nodo_con_cada_elemento_inorder(nodo_abb_t *nodo_actual, bool (*funcion)(v
 {
 	if (nodo_actual == NULL)
 		return 0;
-	size_t cantidad_elementos_recorrido = 0;
-	cantidad_elementos_recorrido += nodo_con_cada_elemento_inorder(nodo_actual->izquierda,funcion,aux);
-	if (funcion(nodo_actual->elemento,aux) == true)
-		cantidad_elementos_recorrido += 1;
-	else
-		return cantidad_elementos_recorrido;
-	cantidad_elementos_recorrido += nodo_con_cada_elemento_inorder(nodo_actual->derecha,funcion,aux);
-	return cantidad_elementos_recorrido;
 }
+
+
 
 size_t nodo_con_cada_elemento_preorden(nodo_abb_t *nodo_actual, bool (*funcion)(void *, void *),void *aux)
 {
@@ -195,8 +191,8 @@ size_t nodo_con_cada_elemento_preorden(nodo_abb_t *nodo_actual, bool (*funcion)(
 		cantidad_elementos_recorrido += 1;
 	else
 		return cantidad_elementos_recorrido;
-	cantidad_elementos_recorrido += nodo_con_cada_elemento_preorden(nodo_actual->izquierda,funcion,aux);
-	cantidad_elementos_recorrido += nodo_con_cada_elemento_preorden(nodo_actual->derecha,funcion,aux);
+	cantidad_elementos_recorrido = nodo_con_cada_elemento_preorden(nodo_actual->izquierda,funcion,aux);
+	cantidad_elementos_recorrido = nodo_con_cada_elemento_preorden(nodo_actual->derecha,funcion,aux);
 	return cantidad_elementos_recorrido;
 }
 
@@ -205,8 +201,8 @@ size_t nodo_con_cada_elemento_postorden(nodo_abb_t *nodo_actual, bool (*funcion)
 	if (nodo_actual == NULL)
 		return 0;
 	size_t cantidad_elementos_recorrido = 0;
-cantidad_elementos_recorrido += nodo_con_cada_elemento_preorden(nodo_actual->izquierda,funcion,aux);
-	cantidad_elementos_recorrido += nodo_con_cada_elemento_preorden(nodo_actual->derecha,funcion,aux);
+cantidad_elementos_recorrido = nodo_con_cada_elemento_preorden(nodo_actual->izquierda,funcion,aux);
+	cantidad_elementos_recorrido = nodo_con_cada_elemento_preorden(nodo_actual->derecha,funcion,aux);
 	if (funcion(nodo_actual->elemento,aux) == true)
 		cantidad_elementos_recorrido += 1;
 
@@ -220,7 +216,9 @@ size_t abb_con_cada_elemento(abb_t *arbol, abb_recorrido recorrido,
 	if (funcion == NULL)
 		return 0;
 	if (recorrido == INORDEN)
-		return nodo_con_cada_elemento_inorder(arbol->nodo_raiz,funcion,aux);
+		int cantidad_recorrida = nodo_con_cada_elemento_inorder(arbol->nodo_raiz,funcion,aux);
+		if (cantidad_recorrida < 0)
+			return 
 	if (recorrido == PREORDEN)
 		return nodo_con_cada_elemento_preorden(arbol->nodo_raiz,funcion,aux);
 	if (recorrido == POSTORDEN)
